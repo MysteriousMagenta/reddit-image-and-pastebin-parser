@@ -20,12 +20,10 @@ def getRedditImages(url):
 def archive(code):
     filename = "already_archived.txt"
     with open(filename, "a+") as image_file:
-        image_file.write("")
-    with open(filename, "r") as image_file:
+        image_file.seek(0)
         for line in image_file:
             if len(re.findall(code, line)) != 0:
                 return False
-    with open(filename, "a+") as image_file:
         image_file.write(code + "\n")
         return True
             
