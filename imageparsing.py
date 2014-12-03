@@ -32,8 +32,11 @@ def archive(code):
 def main(url, matches=None, verbose=True):
     imagecount = 0
     start = time()
+    get_sub = re.compile("/r/(.*)/?(?:\.json)")
+    sub = get_sub.findall(url)[0]
     if matches == None:
         if verbose:
+            print("Searching in /r/" + sub)
             print("Querying reddit...")
         try:
             matches = getRedditImages(url)
@@ -65,10 +68,25 @@ def main(url, matches=None, verbose=True):
         end = time()
         totaltime = int(format(end - start, ".0f"))
         print("Process took {0} second".format(totaltime) + "s" if totaltime > 1 else "")
-        
 
+
+from random import choice
+def randomsub():
+    prepare = lambda x: "http://" + x + ".json"
+    subs = ["reddit.com/r/aww",
+            "reddit.com/r/httyd",
+            "reddit.com/r/pics/new",
+            "reddit.com/r/youdontsurf",
+            "reddit.com/r/wheredidthesodago",
+            "reddit.com/r/mylittlepony",
+            "reddit.com/r/funny",
+            "reddit.com/r/AdviceAnimals"
+            ]
+    sub = choice(subs)
+    return prepare(sub)
+    
 if __name__ == "__main__":
-    main("http://www.reddit.com/r/aww/new")
+    main(randomsub())
 
 
 
