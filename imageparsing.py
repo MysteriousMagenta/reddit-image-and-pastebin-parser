@@ -14,7 +14,7 @@ def properurl(url, string_it=True):
 
 def getRedditImages(url):
     images = imagefilter.findall(properurl(url))
-    images = [x for x in images if len(x.strip()) != 1]
+    images = [x for x in images if len(x.strip()) != 1 or x != "gallery"]
     return set(images) 
 
 def archive(code):
@@ -32,7 +32,7 @@ def archive(code):
 def main(url, matches=None, verbose=True):
     imagecount = 0
     start = time()
-    get_sub = re.compile("/r/(.*)/?(?:\.json)")
+    get_sub = re.compile("/r/(.*?)/?(?:new|top|controversial|hot)?/?(?:\.json)")
     sub = get_sub.findall(url)[0]
     if matches == None:
         if verbose:
@@ -56,7 +56,7 @@ def main(url, matches=None, verbose=True):
             imagecount += 1
             try:
                 imagebinary = properurl("http://www.imgur.com/" + item + ".jpg", False)
-                with open(item+".jpg", "wb") as image:
+                with open(sub + "-" + item +".jpg", "wb") as image:
                     image.write(imagebinary)
             except Exception as e:
                 if verbose:
@@ -76,7 +76,6 @@ def randomsub():
     subs = ["reddit.com/r/aww",
             "reddit.com/r/httyd",
             "reddit.com/r/pics/new",
-            "reddit.com/r/youdontsurf",
             "reddit.com/r/wheredidthesodago",
             "reddit.com/r/mylittlepony",
             "reddit.com/r/funny",
