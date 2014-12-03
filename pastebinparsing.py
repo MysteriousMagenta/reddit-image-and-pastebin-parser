@@ -2,9 +2,8 @@
 import urllib.request
 import re
 
-
 # Failsafe to make sure the file exists.
-with open("already_read.txt", "w") as already_read:
+with open("already_read.txt", "a+") as already_read:
     already_read.write("")
 heads = {"User-Agent":"Python3.4 Reddit/Pastebin Parser 0.1"}
 code_query = re.compile(r"pastebin.com/(\w+)")
@@ -46,10 +45,12 @@ def write_all(sub="new"):
     codes = get_codes(sub)
     codes_new = [x for x in codes if not already_added(x)]
     for pastebin in codes:
+        print("Trying connection...")
         write_pastebin(pastebin)
+        print("Connection got.")
     return codes_new
 
-if __name__ == "__main__":
+def main():
     new = write_all()
     print("New pastebins: ")
     if len(new) == 0:
@@ -57,5 +58,11 @@ if __name__ == "__main__":
     else:
         for item in new:
             print(item)
-        
+            
+if __name__ == "__main__":
+    from time import sleep
+    while True:
+        main()
+        print("-"*10)
+        sleep(60*5)
 
