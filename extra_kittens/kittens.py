@@ -7,7 +7,7 @@ def genSize():
     height = random.randrange(100, 1000)
     return width, height
 
-def getImage()
+def getImage():
     width, height = genSize()
     url = "http://www.placekitten.com/g/" + str(width) + "/" + str(height)
     img = urllib.request.urlopen(url).read()
@@ -17,10 +17,11 @@ def genTitle():
     filename = ""
     for item in range(5):
         filename += random.choice(string.ascii_letters)
+    return filename
         
-def main()
+def main():
     filename = genTitle()
-    image = genImage()
+    image = getImage()
     with open(filename + ".png", "wb") as kitten:
         kitten.write(image)
 
