@@ -8,6 +8,7 @@ def properurl(url, string_it=True):
     request = urllib.request.Request(url, headers=heads)
     data = urllib.request.urlopen(request)
     text = data.read()
+    data.close()
     if string_it:
         text = str(text)
     return text
@@ -53,9 +54,9 @@ def main(url, matches=None, verbose=True):
         else:
             imagecount += 1
             try:
-                imagebinary = properurl("http://www.imgur.com/" + item + ".jpg", False)
-                with open(sub + "-" + item +".jpg", "wb") as image:
-                    image.write(imagebinary)
+                url = "http://www.imgur.com/" + item + ".jpg"
+                path = sub + "-" + item +".jpg"
+                urllib.request.urlretrieve(url, path)
             except Exception as e:
                 if verbose:
                     print(str(e))
