@@ -1,9 +1,24 @@
 from time import time
 import urllib.request
 import re
+from random import choice
+# Thinking of rewriting this
 
 imagefilter = re.compile("imgur.com/(\w+)")
+get_sub = re.compile("/r/(.*?)/?(?:new|top|controversial|hot)?/?(?:\.json)")
 heads = {"User-Agent": "Python3.4 Reddit Image Parser"}
+filename = "already_archived.txt"
+with open(filename, "a+") as image_file:
+    image_file.write("")
+def archive():
+    codes = []
+    with open(filename) as image_file:
+        for line in image_file:
+            codes.append(line.strip())
+    return codes
+
+archived = archive()
+
 def properurl(url, string_it=True):
     request = urllib.request.Request(url, headers=heads)
     data = urllib.request.urlopen(request)
@@ -18,49 +33,45 @@ def getRedditImages(url):
     images = [x for x in images if len(x.strip()) != 1 or x != "gallery"]
     return set(images) 
 
-def archive(code):
-    filename = "already_archived.txt"
+def add_to_file(code):
+    if code in archived:
+        return False
     with open(filename, "a+") as image_file:
-        image_file.seek(0)
-        for line in image_file:
-            if len(re.findall(code, line)) != 0:
-                return False
         image_file.write(code + "\n")
-        return True
+    return True
             
-def main(url, matches=None, verbose=True):
+def main(url, verbose=True):
     imagecount = 0
     start = time()
-    get_sub = re.compile("/r/(.*?)/?(?:new|top|controversial|hot)?/?(?:\.json)")
     sub = get_sub.findall(url)[0]
-    if matches == None:
+    if verbose:
+        print("Searching in /r/" + sub)
+        print("Querying reddit...")
+    try:
+        matches = getRedditImages(url)
         if verbose:
-            print("Searching in /r/" + sub)
-            print("Querying reddit...")
-        try:
-            matches = getRedditImages(url)
-            if verbose:
-                print("Finished with Reddit.")
-                print("Found {0} images total.".format(len(matches)))
-        except:
-            if verbose:
-                print("Unvalid url.")
-            return
+            print("Finished with Reddit.")
+            print("Found {0} images total.".format(len(matches)))
+    except:
+        if verbose:
+            print("Unvalid url.")
+        return
     if verbose:
         print("Adding images...")
     for item in matches:
-        if not archive(item):
+        if item in archived:
             pass
         else:
-            imagecount += 1
             try:
-                url = "http://www.imgur.com/" + item + ".jpg"
+                add_to_file(item)
+                url = "http://imgur.com/" + item + ".jpg"
                 path = sub + "-" + item +".jpg"
                 urllib.request.urlretrieve(url, path)
             except Exception as e:
                 if verbose:
-                    print(str(e))
+                    print("Exception:\n" + str(e))
                     print("{0} failed.".format(item))
+            imagecount += 1
     if verbose:
         print("Added images.")
         print("Found {0} new images.".format(imagecount))
@@ -68,8 +79,6 @@ def main(url, matches=None, verbose=True):
         totaltime = int(format(end - start, ".0f"))
         print("Process took {0} second".format(totaltime) + "s" if totaltime > 1 else "")
 
-
-from random import choice
 def randomsub():
     prepare = lambda x: "http://" + x + ".json"
     subs = ["reddit.com/r/aww",
@@ -78,8 +87,7 @@ def randomsub():
             "reddit.com/r/wheredidthesodago",
             "reddit.com/r/mylittlepony",
             "reddit.com/r/funny",
-            "reddit.com/r/AdviceAnimals"
-            ]
+            "reddit.com/r/AdviceAnimals"]
     sub = choice(subs)
     return prepare(sub)
     

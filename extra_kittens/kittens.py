@@ -1,29 +1,33 @@
 import urllib.request
-import random
-import string
-
+from random import randint, choice
+from string import ascii_letters, digits
+source = ascii_letters + digits
 def genSize():
-    width = random.randrange(100, 1000)
-    height = random.randrange(100, 1000)
+    width = randint(100, 1000)
+    height = randint(100, 1000)
     return width, height
 
-def getImage():
-    width, height = genSize()
-    url = "http://www.placekitten.com/g/" + str(width) + "/" + str(height)
-    img = urllib.request.urlopen(url).read()
-    return img
+def genTitle(length=randint(5, 10)):
+    if not isinstance(length, int):
+        print("Length was not an integer.")
+        return
+    title = ""
+    for item in range(length):
+        title += choice(source)
+    return title + ".jpg"
 
-def genTitle():
-    filename = ""
-    for item in range(5):
-        filename += random.choice(string.ascii_letters)
-    return filename
-        
-def main():
-    filename = genTitle()
-    image = getImage()
-    with open(filename + ".png", "wb") as kitten:
-        kitten.write(image)
+def getImage():
+    width, height = [str(x) for x in genSize()]
+    url = "http://placekitten.com/g/" + width + "/" + height
+    urllib.request.urlretrieve(url, genTitle())
+    return width+"x"+height
+
+def main(amount=10):
+    for item in range(amount):
+        print(getImage())
 
 if __name__ == "__main__":
     main()
+        
+    
+    
