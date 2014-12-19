@@ -1,98 +1,109 @@
-from time import time
-import urllib.request
+from random import choice, randint
 import re
-from random import choice
-# Thinking of rewriting this
+import urllib.request
+from urllib.error import HTTPError
 
-imagefilter = re.compile("imgur.com/(\w+)")
-get_sub = re.compile("/r/(.*?)/?(?:new|top|controversial|hot)?/?(?:\.json)")
-heads = {"User-Agent": "Python3.4 Reddit Image Parser"}
-filename = "already_archived.txt"
-with open(filename, "a+") as image_file:
-    image_file.write("")
-def archive():
-    codes = []
-    with open(filename) as image_file:
-        for line in image_file:
-            codes.append(line.strip())
-    return codes
+image_finder = "imgur.com/(\w+)"
+image_finder = re.compile(image_finder)
+archive_name = "archived_images.txt"
 
-archived = archive()
+with open(archive_name, "a+") as archive_file:
+    archive_file.write("")
 
-def properurl(url, string_it=True):
-    request = urllib.request.Request(url, headers=heads)
-    data = urllib.request.urlopen(request)
-    text = data.read()
-    data.close()
-    if string_it:
-        text = str(text)
+
+def get_archive():
+    global the_archive
+    with open(archive_name) as archive_text:
+        the_archive = archive_text.read().split("\n")
+
+
+get_archive()
+
+
+def proper_urlopen(url):
+    headers = {"User-Agent": "Python3.4 Image-Parser"}
+    request = urllib.request.Request(url, headers=headers)
+    request = urllib.request.urlopen(request)
+    text = request.read().decode()
+    request.close()
     return text
 
-def getRedditImages(url):
-    images = imagefilter.findall(properurl(url))
-    images = [x for x in images if len(x.strip()) != 1 or x != "gallery"]
-    return set(images) 
 
-def add_to_file(code):
-    if code in archived:
-        return False
-    with open(filename, "a+") as image_file:
-        image_file.write(code + "\n")
-    return True
-            
-def main(url, verbose=True):
-    imagecount = 0
-    start = time()
-    sub = get_sub.findall(url)[0]
-    if verbose:
-        print("Searching in /r/" + sub)
-        print("Querying reddit...")
+def proper_subreddit(subreddit_shortcut):
+    subreddit_format = "http://www.reddit.com/r/{}"
+    return subreddit_format.format(subreddit_shortcut)
+
+
+def get_json(subreddit):
+    text = proper_urlopen(subreddit + (".json" if not subreddit.endswith(".json") else ""))
+    return text
+
+
+def find_images(subreddit):
+    sub_json = get_json(subreddit)
+    sub_images = image_finder.findall(sub_json)
+    return sub_images
+
+
+def write_image(image_code):
+    imgur_format = "http://i.imgur.com/{}.jpg"
+    image_url = imgur_format.format(image_code)
     try:
-        matches = getRedditImages(url)
-        if verbose:
-            print("Finished with Reddit.")
-            print("Found {0} images total.".format(len(matches)))
-    except:
-        if verbose:
-            print("Unvalid url.")
-        return
-    if verbose:
-        print("Adding images...")
-    for item in matches:
-        if item in archived:
-            pass
+        if image_code in the_archive:
+            return 0
+        urllib.request.urlretrieve(image_url, image_code + ".jpg")
+        return 1
+    except HTTPError as error:
+        error = str(error)
+        if "404" in error:
+            print("Image '{}' could not be found".format(image_code))
         else:
-            try:
-                add_to_file(item)
-                url = "http://imgur.com/" + item + ".jpg"
-                path = sub + "-" + item +".jpg"
-                urllib.request.urlretrieve(url, path)
-            except Exception as e:
-                if verbose:
-                    print("Exception:\n" + str(e))
-                    print("{0} failed.".format(item))
-            imagecount += 1
-    if verbose:
-        print("Added images.")
-        print("Found {0} new images.".format(imagecount))
-        end = time()
-        totaltime = int(format(end - start, ".0f"))
-        print("Process took {0} second".format(totaltime) + "s" if totaltime > 1 else "")
-
-def randomsub():
-    prepare = lambda x: "http://" + x + ".json"
-    subs = ["reddit.com/r/aww",
-            "reddit.com/r/httyd",
-            "reddit.com/r/pics/new",
-            "reddit.com/r/wheredidthesodago",
-            "reddit.com/r/mylittlepony",
-            "reddit.com/r/funny",
-            "reddit.com/r/AdviceAnimals"]
-    sub = choice(subs)
-    return prepare(sub)
-    
-if __name__ == "__main__":
-    main(randomsub())
+            print("Image '{}' failed with exception '{}'".format(image_code, error))
+    with open(archive_name, "a+") as archive:
+        archive.write(image_code + "\n")
+    return 0
 
 
+def write_images(subreddit, limit=None):
+    to_write = find_images(subreddit)
+    amount_of_images = 0
+    if limit is None or limit > len(to_write):
+        limit = len(to_write)
+    print("Attempting to write {} images".format(limit))
+    for image in to_write[:limit]:
+        amount_of_images += write_image(image)
+    print("Wrote {} images".format(amount_of_images))
 
+
+# Here is where the image_parsing part of the scripts stops.
+# From now on, these are extra features
+
+def random_sub():
+    subs = [
+        "pics",
+        "aww",
+        "httyd",
+        "funny",
+        "gaming"
+    ]
+    chosen_sub = choice(subs)
+    return proper_subreddit(chosen_sub)
+
+
+# Merge of extra_kittens
+def gen_size():
+    h, w = randint(100, 1000), randint(100, 1000)
+    return h, w
+
+
+def gen_name():
+    new_name = ""
+    for item in range(randint(5, 15)):
+        new_name += choice("abcdefghijklmonopqrstuvwxyz")
+    return new_name + ".jpg"
+
+
+def get_kitten_image(path, width, height):
+    kitten_format = "http://placekitten.com/g/{}/{}"
+    kitten_image_url = kitten_format.format(width, height)
+    urllib.request.urlretrieve(kitten_image_url, path)
