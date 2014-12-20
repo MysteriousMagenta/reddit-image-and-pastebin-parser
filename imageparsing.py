@@ -21,12 +21,16 @@ get_archive()
 
 
 def proper_urlopen(url):
-    headers = {"User-Agent": "Python3.4 Image-Parser"}
-    request = urllib.request.Request(url, headers=headers)
-    request = urllib.request.urlopen(request)
-    text = request.read().decode()
-    request.close()
-    return text
+    try:
+        headers = {"User-Agent": "Python3.4 Image-Parser"}
+        request = urllib.request.Request(url, headers=headers)
+        request = urllib.request.urlopen(request)
+        text = request.read().decode()
+        request.close()
+        return text
+    except HTTPError as e:
+        e = str(e)
+        print("url '{}' failed with error code '{}'".format(url, e))
 
 
 def proper_subreddit(subreddit_shortcut):
@@ -67,6 +71,7 @@ def write_image(image_code):
 def write_images(subreddit, limit=None):
     to_write = find_images(subreddit)
     amount_of_images = 0
+    print("Writing in subreddit '{}'".format(subreddit))
     if limit is None or limit > len(to_write):
         limit = len(to_write)
     print("Attempting to write {} images".format(limit))
@@ -107,3 +112,6 @@ def get_kitten_image(path, width, height):
     kitten_format = "http://placekitten.com/g/{}/{}"
     kitten_image_url = kitten_format.format(width, height)
     urllib.request.urlretrieve(kitten_image_url, path)
+
+if __name__ == "__main__":
+    write_images(random_sub())
