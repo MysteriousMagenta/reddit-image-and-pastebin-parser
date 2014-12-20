@@ -1,68 +1,73 @@
-
 import urllib.request
 import re
+pastebin_finder = re.compile("pastebin.com/(\w+)")
+pastebin_raw_format = "http://pastebin.com/raw.php?i={}"
+file_name = "already_read.txt"
 
-# Failsafe to make sure the file exists.
-with open("already_read.txt", "a+") as already_read:
-    already_read.write("")
-heads = {"User-Agent":"Python3.4 Reddit/Pastebin Parser 0.1"}
-code_query = re.compile(r"pastebin.com/(\w+)")
-def already_added(code):
-    with open("already_read.txt") as code_file:
-        for line in code_file:
-            if line.strip().strip("\n") == code:
-                return True
-    return False
-def get_codes(section="new"):
-    url = "http://www.reddit.com/r/learnpython/" + section + "/.json"
-    request = urllib.request.Request(url, headers=heads)
-    data = urllib.request.urlopen(request)
-    text = data.read()
-    text = str(text)
-    links = set(code_query.findall(text))
-    return links
 
-def write_pastebin(code):
-    if already_added(code):
-        print("code {0} was found, but was already copied.".format(code))
-        return True
-    else:
-        print("code {0} was found and is new, and is being written.".format(code))
-    with open("already_read.txt", "a") as code_file:
-        code_file.write(code + "\n")
-    url = "http://pastebin.com/raw.php?i=" + code
-    request = urllib.request.Request(url, headers=heads)
-    data = urllib.request.urlopen(request)
-    text = data.read().decode("utf-8")
-    text = str(text)
-    with open(code + ".txt", "w") as file:
-            file.write("# " + "pastebin.com/" + code + "\n")
-    with open(code + ".txt", "a") as file:
-            file.write(text)
+def get_pastebins():
+    global read_pastebins
+    read_pastebins = []
+    with open(file_name, "a+") as pastebin_file:
+        pastebin_file.write("")
+    with open(file_name) as pastebin_file:
+        for line in pastebin_file:
+            read_pastebins.append(line.strip())
+    return read_pastebins
+get_pastebins()
+
+
+def get_json(subreddit):
+    if not subreddit.endswith(".json"):
+        subreddit += ".json"
+    subreddit_json = proper_urlopen(subreddit)
+    return subreddit_json
+
+
+def proper_subreddit(shortcut):
+    if not shortcut.startswith("http://reddit.com/r/") or shortcut.startswith("http://www.reddit.com/r/"):
+        return "http://reddit.com/r/{}".format(shortcut)
+    return shortcut
+
+
+def proper_urlopen(url):
+    request = urllib.request.Request(url, headers={"User-Agent": "Reddit Python3.4 Pastebin Parser"})
+    request = urllib.request.urlopen(request)
+    text = request.read().decode()
+    request.close()
     return text
 
-def write_all(sub="new"):
-    codes = get_codes(sub)
-    codes_new = [x for x in codes if not already_added(x)]
-    for pastebin in codes:
-        print("Trying connection...")
-        write_pastebin(pastebin)
-        print("Connection got.")
-    return codes_new
 
-def main():
-    new = write_all()
-    print("New pastebins: ")
-    if len(new) == 0:
-        print("Nothing.")
+def find_pastebins(url, is_reddit=True):
+    if is_reddit:
+        url = proper_subreddit(url)
+        url = get_json(url)
     else:
-        for item in new:
-            print(item)
-            
-if __name__ == "__main__":
-    from time import sleep
-    while True:
-        main()
-        print("-"*10)
-        sleep(60*5)
+        url = proper_urlopen(url)
+    return pastebin_finder.findall(url)
 
+
+def get_raw_pastebin(code):
+    pastebin_link = pastebin_raw_format.format(code)
+    pastebin_text = proper_urlopen(pastebin_link)
+    return pastebin_text
+
+
+def write_pastebin(code):
+    if code in read_pastebins:
+        return
+    with open(file_name, "a+") as pastebin_file:
+        pastebin_file.write(code + "\n")
+    pastebin_content = get_raw_pastebin(code)
+    with open(code+".txt", "w") as pastebin_file:
+        pastebin_file.write(pastebin_content)
+
+
+def write_pastebins(url, is_reddit=True):
+    url_pastebins = find_pastebins(url, is_reddit)
+    for item in set(url_pastebins):
+        write_pastebin(item)
+
+if __name__ == "__main__":
+    reddit_url = proper_subreddit("learnpython")
+    write_pastebins(reddit_url)
