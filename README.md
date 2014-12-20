@@ -1,7 +1,12 @@
-reddit-pastebin-parser
+reddit-image-and-pastebin-parser
 ======================
 
-A simple parser that reads through /r/learnpython and takes the pastebins.
-I was bored one day and saw all the cool reddit bots and thought "I should make my own." so I did.
-And here's the result.
-It reads the pastebins from http://www.reddit.com/r/learnpython/new/ and stuffs them in a file.
+image-parser
+======================
+A reddit parser which parses reddit's JSON finding imgur links and storing them in a file.
+Functionality for the website 'placekitten.com' was also added.
+
+pastebin-parser
+======================
+Reads through reddit's JSON and gets the pastebins.
+Description will be expanded once I commit the re-write
