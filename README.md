@@ -9,9 +9,14 @@ Currently supported are:
 Future support is meant to implement support for hastebin and other code sources.
 For the image side of things, deviantart and photobucket (maybe tinypic too) are meant to be getting support.
 
-Image Parsing
+Requirements - code_requirements.py
 ======================
-imageparsing.py
+A .py file which includes code that all the other .py files rely on.
+Other than this, everything else is standard library.
+
+Image Parsing - imageparsing.py
+======================
+
 
 This finds all the imgur links in a given url's HTML/JSON and saves them to file.
 Currently it writes file with the subreddit + the image code + .jpg
@@ -19,17 +24,17 @@ However, this will be getting another re-work to work better with json files and
 Currently supported:
   imgur
   
-Pastebin Parsing
+Pastebin Parsing - pastebinparsing.py
 ======================
-codeparsing.py
+
 
 The next couple of "Parsing" scripts are all found in codeparsing.py
 This reads pastebin links from any url given and writes them with a file with name pastebin_code + given extension.
 This is the next re-write, after implementing hastebin
 
-Gist Parsing
+Gist Parsing - gistparsing.py
 ======================
-codeparsing.py
+
 
 This is definitely my favorite out of the lot. ( <3 GitHub for having an awesome website + API )
 This reads gists from a given url, and writes them to file.
