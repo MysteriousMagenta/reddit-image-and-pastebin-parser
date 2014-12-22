@@ -112,6 +112,3 @@ def get_kitten_image(path, width, height):
     kitten_format = "http://placekitten.com/g/{}/{}"
     kitten_image_url = kitten_format.format(width, height)
     urllib.request.urlretrieve(kitten_image_url, path)
-
-if __name__ == "__main__":
-    write_images(random_sub())

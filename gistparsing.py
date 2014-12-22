@@ -1,4 +1,4 @@
-from code_requirements import *
+import code_requirements
 import urllib.request
 import re
 import json
@@ -31,10 +31,10 @@ archived_gists = get_archived_gists()
 
 def find_gists(url, is_reddit=True):
     if is_reddit:
-        url = proper_subreddit(url)
-        url = get_json(url)
+        url = code_requirements.proper_subreddit(url)
+        url = code_requirements.get_json(url)
     else:
-        url = proper_urlopen(url)
+        url = code_requirements.proper_urlopen(url)
     return list(set(gist_finder.findall(url)))
 
 

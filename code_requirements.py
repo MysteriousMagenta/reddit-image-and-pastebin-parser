@@ -14,9 +14,11 @@ def proper_subreddit(shortcut):
     return shortcut
 
 
-def proper_urlopen(url):
-    request = urllib.request.Request(url, headers={"User-Agent": "Reddit Python3.4 Pastebin Parser"})
+def proper_urlopen(url, ddecode=True):
+    request = urllib.request.Request(url, headers={"User-Agent": "Reddit Python3.4 Code Parser"})
     request = urllib.request.urlopen(request)
-    text = request.read().decode()
+    text = request.read()
+    if ddecode:
+        text = text.decode()
     request.close()
     return text
