@@ -46,10 +46,17 @@ For Files:
   name of the file, including extension.
 More features will be added, cause <3 GitHub
 
+Hastebin Parsing - hastebinparsing.py
+======================
+
+
+A parser for hastebin which takes the hastebins and puts them in a file.
+Surprisingly easy to make considering that Hastebin has a rather nice API.
+
 Future Features / To-DO
 ======================
 
 
-Hastebin support  
+~~Hastebin support~~
 Reddit "markdown" support.  
 Suggest in comments/anywhere more features you'd like to be added!  
